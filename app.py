@@ -56,7 +56,7 @@ for detector_id in DETECTOR_LABELS:
     st.session_state.setdefault(f"detector_{detector_id}", True)
 
 st.title("🛡️ ContextGuard - AI Prompt Security")
-st.caption("Local-First Privacy Guard for Generative AI")
+st.caption("Local-First Privacy Guard for Developers")
 
 gemini_enabled = st.toggle(
     "Enable Gemini Deep Context Analysis",
