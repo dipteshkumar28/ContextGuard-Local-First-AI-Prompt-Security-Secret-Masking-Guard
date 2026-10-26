@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>ContextGuard App Map</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      line-height: 1.6;
+    }
+
+    body {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+
+    a { color: #7dd3fc; }
+    code {
+      color: #bae6fd;
+      background: #1e293b;
+      border-radius: 0.25rem;
+      padding: 0.1rem 0.3rem;
+      overflow-wrap: anywhere;
+    }
+
+    h1, h2 { line-height: 1.2; }
+    h1 { font-size: clamp(2rem, 7vw, 3.2rem); margin-bottom: 0.5rem; }
+    h2 { margin-top: 2rem; }
+
+    .eyebrow { color: #5eead4; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .lede, .note { color: #cbd5e1; }
+    .panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.8rem;
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+    }
+
+    figure { margin: 1rem 0 0; }
+    .flow {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #111c31;
+      border: 1px solid #334155;
+      border-radius: 0.8rem;
+    }
+
+    .flow .node { fill: #1e293b; stroke: #38bdf8; stroke-width: 2; }
+    .flow .node.optional { stroke: #fbbf24; stroke-dasharray: 7 5; }
+    .flow .arrow { fill: none; stroke: #5eead4; stroke-width: 3; marker-end: url(#arrow); }
+    .flow .title { fill: #f8fafc; font-size: 16px; font-weight: 700; }
+    .flow .detail { fill: #cbd5e1; font-size: 12px; }
+    figcaption { color: #cbd5e1; margin-top: 0.6rem; }
+
+    li { margin: 0.65rem 0; }
+    .tag {
+      display: inline-block;
+      border: 1px solid #5eead4;
+      border-radius: 999px;
+      color: #99f6e4;
+      font-size: 0.82rem;
+      padding: 0.1rem 0.6rem;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1.25rem 0.75rem 3rem; }
+      .panel { padding: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">ContextGuard · Developer guide</p>
+      <h1>App Map</h1>
+      <p class="lede">A compact guide to the local scan, optional Gemini boundary, and the code that displays the results.</p>
+    </header>
+
+    <section aria-labelledby="overview">
+      <h2 id="overview">What the app does</h2>
+      <p>ContextGuard checks pasted prompt text against a defined set of local patterns, replaces supported matches with placeholders, and shows counts plus a cleaned copy-ready prompt. Gemini is optional and off by default. If the user explicitly scans with it enabled, the app sends only the locally redacted text and validates the structured response before display.</p>
+
+      <figure class="panel">
+        <svg class="flow" viewBox="0 0 920 190" role="img" aria-labelledby="flow-title flow-description">
+          <title id="flow-title">One ContextGuard scan from input to results</title>
+          <desc id="flow-description">The scan button in app.py calls local redaction in scanner.py. An optional Gemini step receives only redacted text. app.py displays the cleaned prompt, counts, and any validated analysis.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5eead4"></path>
+            </marker>
+          </defs>
+          <path class="arrow" d="M195 95 H225"></path>
+          <path class="arrow" d="M420 95 H450"></path>
+          <path class="arrow" d="M655 95 H685"></path>
+          <rect class="node" x="15" y="48" width="180" height="94" rx="12"></rect>
+          <text class="title" x="30" y="78">Submit scan</text>
+          <text class="detail" x="30" y="102">app.py · button + input</text>
+          <text class="detail" x="30" y="121">blank input is rejected</text>
+          <rect class="node" x="225" y="48" width="195" height="94" rx="12"></rect>
+          <text class="title" x="240" y="78">Redact locally</text>
+          <text class="detail" x="240" y="102">scanner.py · scan_prompt()</text>
+          <text class="detail" x="240" y="121">placeholders + counts</text>
+          <rect class="node optional" x="450" y="48" width="205" height="94" rx="12"></rect>
+          <text class="title" x="465" y="78">Optional Gemini</text>
+          <text class="detail" x="465" y="102">analyze_with_gemini()</text>
+          <text class="detail" x="465" y="121">redacted text only</text>
+          <rect class="node" x="685" y="48" width="220" height="94" rx="12"></rect>
+          <text class="title" x="700" y="78">Review results</text>
+          <text class="detail" x="700" y="102">app.py · cleaned prompt</text>
+          <text class="detail" x="700" y="121">counts + validated analysis</text>
+        </svg>
+        <figcaption>With Gemini off, the optional step is bypassed. If Gemini is unavailable, local results remain available.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="route">
+      <h2 id="route">Reference route through the code</h2>
+      <p><span class="tag">Reference only · not an interactive code tour</span></p>
+      <ol>
+        <li><a href="../app.py"><code>app.py</code></a> — Find the <code>Scan &amp; Mask Prompt</code> button block. It rejects blank input, runs <code>scan_prompt()</code> first, and calls Gemini only when the toggle is enabled and the user submits.</li>
+        <li><a href="../scanner.py"><code>scanner.py</code></a> — <code>scan_prompt()</code> returns redacted text and counts. <code>analyze_with_gemini()</code> accepts that redacted text plus the API key; <code>RiskAssessment</code> enforces the score, level, and exactly two findings.</li>
+        <li><a href="../app.py"><code>app.py</code></a> and <a href="../tests/test_scanner.py"><code>tests/test_scanner.py</code></a> — The UI shows the local result and any validated assessment. Offline tests check that the Gemini request contains redacted text, and cover missing keys, API/timeout errors, and invalid responses.</li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="changes">
+      <h2 id="changes">To change this, start here</h2>
+      <ul>
+        <li>Supported detectors, labels, and replacement patterns: <a href="../scanner.py"><code>DETECTOR_LABELS</code> and <code>_RULES</code></a>.</li>
+        <li>Gemini model, instructions, and response shape: <a href="../scanner.py"><code>_GEMINI_MODEL</code>, <code>_GEMINI_SYSTEM_INSTRUCTION</code>, and <code>RiskAssessment</code></a>.</li>
+        <li>Labels, toggles, status, warnings, and result presentation: <a href="../app.py"><code>app.py</code></a>.</li>
+        <li>Expected redactions, response validation, and mocked API behavior: <a href="../tests/test_scanner.py"><code>tests/test_scanner.py</code></a>.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="practice">
+      <h2 id="practice">A practice to reuse</h2>
+      <div class="panel">
+        <p>Turn an important boundary into something observable. ContextGuard keeps redaction in <code>scan_prompt()</code>, limits the Gemini function to redacted text, and tests the outgoing request with a mock. A separate startup check caught Streamlit's network-wide default; <code>.streamlit/config.toml</code> now binds to <code>127.0.0.1</code>, and the correction is recorded in <a href="spec.md"><code>devpost/spec.md</code></a>. On another project, pair a requirement with both a focused test and a check of the running behavior that could violate it.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="run">
+      <h2 id="run">Run it again</h2>
+      <div class="panel">
+        <p>From the project folder in PowerShell:</p>
+        <p><code>.\myvenv\Scripts\python.exe -m streamlit run app.py</code></p>
+        <p>Open <code>http://localhost:8501</code>. The app binds to localhost. Gemini is optional; without a key, local scans still work and an enabled scan shows a missing-key message.</p>
+        <p>Run offline tests with <code>.\myvenv\Scripts\python.exe -m unittest discover -s tests</code>.</p>
+      </div>
+      <p class="note">Source snapshot: commit <code>83b7542</code>. This map is standalone and works offline; it describes that code snapshot and may drift if the source changes.</p>
+    </section>
+  </main>
+</body>
+</html>

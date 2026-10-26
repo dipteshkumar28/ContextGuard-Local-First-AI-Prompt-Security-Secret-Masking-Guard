@@ -1,0 +1,12 @@
+/devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local Python environments and generated files
+myvenv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
